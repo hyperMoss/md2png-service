@@ -1,0 +1,12 @@
+FROM oven/bun:1 AS bun
+FROM node:24-bookworm-slim
+COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY gateway ./gateway
+COPY renderer/schema.ts ./renderer/schema.ts
+COPY openapi.json ./openapi.json
+RUN mkdir -p /data/images && chown node:node /data/images
+USER node
+CMD ["bun", "gateway/server.ts"]

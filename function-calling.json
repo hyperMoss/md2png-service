@@ -1,0 +1,39 @@
+{
+  "name": "render_markdown_to_png",
+  "description": "Render Markdown as a PNG image",
+  "parameters": {
+    "type": "object",
+    "required": [
+      "markdown"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "markdown": {
+        "type": "string"
+      },
+      "theme": {
+        "type": "string",
+        "enum": [
+          "default",
+          "smartisan-dark",
+          "apple-notes",
+          "apple-notes-light",
+          "bear",
+          "bazhahei",
+          "telegraph"
+        ]
+      },
+      "footer": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string"
+          },
+          "via": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

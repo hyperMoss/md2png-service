@@ -1,0 +1,33 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    env_file: .env
+    environment:
+      WORKER_URL: http://worker:3001
+      IMAGE_DIR: /data/images
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - images:/data/images
+    networks: [edge, internal]
+    depends_on: [worker]
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    networks: [internal]
+    init: true
+    mem_limit: 1g
+networks:
+  edge: {}
+  internal:
+    internal: true
+volumes:
+  images: {}
