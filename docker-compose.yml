@@ -1,5 +1,6 @@
 services:
   gateway:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile.gateway
@@ -19,6 +20,7 @@ services:
       timeout: 5s
       retries: 3
   worker:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile.worker

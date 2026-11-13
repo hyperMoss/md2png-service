@@ -1,0 +1,25 @@
+{
+  "repository": "https://github.com/zhaoolee/notes",
+  "commit": "416035cdccd0226aa94f045e8474b45bfd533961",
+  "path": "src/assets/fonts",
+  "files": [
+    {
+      "file": "OPPOSans-R.woff2",
+      "bytes": 4814420,
+      "git_blob_sha1": "028cb56b704ecbec71b931164946129c29db190a",
+      "sha256": "d59255490239e36f74ae0c12063001ff7c55fac8d402abab2a9c9048c4bee0e2"
+    },
+    {
+      "file": "OPPOSans-M.woff2",
+      "bytes": 4863204,
+      "git_blob_sha1": "4cda79d9544f27f3e92a9499b3d7e5584d5fd5ef",
+      "sha256": "f9dc4f354ba0d5df1b02675af2d0eda6dc36b4a9c7dde53e26b59af660f50a29"
+    },
+    {
+      "file": "OPPOSans-B.woff2",
+      "bytes": 4923444,
+      "git_blob_sha1": "09dbf6ae3e07ce3ae4c8eea8f7298a1189167e3b",
+      "sha256": "0b79ab51dfddd3a1c43f58269317a7f2aa1b9047b42e8a41feae4b8651a2b827"
+    }
+  ]
+}

@@ -4,7 +4,7 @@ import { mkdir, readFile, readdir, stat, unlink, writeFile } from 'node:fs/promi
 import { join } from 'node:path';
 import { renderSchema, themes } from '../renderer/schema.js';
 
-export interface Config {apiKey:string; publicBaseUrl:string; workerUrl:string; imageDir:string; ttlMs:number; concurrency:number; maxBodyBytes:number; fetchWorker?:typeof fetch}
+export interface Config {apiKey:string; publicBaseUrl:string; workerUrl:string; imageDir:string; ttlMs:number; concurrency:number; maxBodyBytes:number; publicImages?:boolean; fetchWorker?:typeof fetch}
 const imageId=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 export async function cleanup(dir:string, ttlMs:number, now=Date.now()) {await mkdir(dir,{recursive:true});for(const file of await readdir(dir)){if(!imageId.test(file.replace(/\.png$/, '')) || !file.endsWith('.png')) continue; const path=join(dir,file); try{if(now-(await stat(path)).mtimeMs>=ttlMs) await unlink(path);}catch(e){if((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e;}}}
 export function createApp(config:Config) {
@@ -13,8 +13,12 @@ export function createApp(config:Config) {
   const publicBase=base.toString().replace(/\/$/,'');
   const app=new Hono();let active=0;
   app.get('/health',c=>c.json({status:'ok'}));
-  app.get('/openapi.json',async c=>c.json(JSON.parse(await readFile(new URL('../openapi.json',import.meta.url),'utf8'))));
-  app.use('*',async(c,next)=>{const token=c.req.header('authorization')?.match(/^Bearer (.+)$/)?.[1] || '';const a=Buffer.from(token),b=Buffer.from(config.apiKey);if(a.length!==b.length || !timingSafeEqual(a,b)) return c.json({error:'Unauthorized'},401);await next();});
+  app.get('/openapi.json',async c=>{const spec=JSON.parse(await readFile(new URL('../openapi.json',import.meta.url),'utf8'));if(config.publicImages)spec.paths['/v1/images/{id}.png'].get.security=[];return c.json(spec);});
+  app.use('*',async(c,next)=>{
+    const publicId=c.req.path.match(/^\/v1\/images\/([^/]+)\.png$/)?.[1];
+    if(config.publicImages && ['GET','HEAD'].includes(c.req.method) && publicId && imageId.test(publicId)) return next();
+    const token=c.req.header('authorization')?.match(/^Bearer (.+)$/)?.[1] || '';const a=Buffer.from(token),b=Buffer.from(config.apiKey);if(a.length!==b.length || !timingSafeEqual(a,b)) return c.json({error:'Unauthorized'},401);await next();
+  });
   app.use('*',async(c,next)=>{if(!['POST','PUT','PATCH'].includes(c.req.method)) return next();const reader=c.req.raw.body?.getReader();let size=0;const chunks:Uint8Array[]=[];if(reader){while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>config.maxBodyBytes){await reader.cancel();return c.json({error:'Request too large'},413);}chunks.push(value);}}const data=Buffer.concat(chunks);c.set('body' as never,data as never);await next();});
   async function render(raw:unknown) {const input=renderSchema.parse(raw);if(active>=config.concurrency) throw new Error('busy');active++;try{const response=await (config.fetchWorker||fetch)(config.workerUrl+'/internal/render',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(input),signal:AbortSignal.timeout(60000)});if(!response.ok) throw new Error('worker');const width=Number(response.headers.get('x-image-width')),height=Number(response.headers.get('x-image-height'));const bytes=Buffer.from(await response.arrayBuffer());if(!Number.isSafeInteger(width)||width<1||!Number.isSafeInteger(height)||height<1||bytes.length<8 || !bytes.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex')))throw Error('worker');await mkdir(config.imageDir,{recursive:true});const id=randomUUID();await writeFile(join(config.imageDir,id+'.png'),bytes,{flag:'wx'});return {id,image_url:`${publicBase}/v1/images/${id}.png`,width,height,size_bytes:bytes.length};}finally{active--;}}
   async function info(id:string){if(!imageId.test(id)) return null;try{const path=join(config.imageDir,id+'.png');const s=await stat(path);if(Date.now()-s.mtimeMs>=config.ttlMs)return null;const bytes=await readFile(path);if(bytes.length<24)return null;return {id,image_url:`${publicBase}/v1/images/${id}.png`,width:bytes.readUInt32BE(16),height:bytes.readUInt32BE(20),size_bytes:s.size,bytes};}catch{return null;}}

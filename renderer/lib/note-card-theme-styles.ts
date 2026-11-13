@@ -43,13 +43,13 @@ export interface NoteCardThemeStyle {
 const smartisanFont =
   '"OPPOSans","Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif';
 const appleFont =
-  '-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro SC","PingFang SC","Helvetica Neue",Arial,sans-serif';
+  '-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro SC","PingFang SC","OPPOSans","Helvetica Neue",Arial,sans-serif';
 const bearFont =
-  '"Avenir Next","AvenirNext-Regular",Avenir,-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif';
+  '"Avenir Next","AvenirNext-Regular",Avenir,-apple-system,BlinkMacSystemFont,"PingFang SC","OPPOSans","Helvetica Neue",Arial,sans-serif';
 const telegraphSerifFont =
-  'Georgia,Cambria,"Times New Roman","Noto Serif SC","Songti SC",serif';
+  'Georgia,Cambria,"Times New Roman","Noto Serif SC","Songti SC","OPPOSans",serif';
 const telegraphSansFont =
-  '"Lucida Grande",-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif';
+  '"Lucida Grande",-apple-system,BlinkMacSystemFont,"PingFang SC","OPPOSans","Helvetica Neue",Arial,sans-serif';
 
 export const NOTE_CARD_THEME_STYLES: Record<
   NoteCardThemeId,

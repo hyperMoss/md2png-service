@@ -3,7 +3,7 @@ FROM node:24-bookworm-slim
 COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --loglevel=info
 COPY gateway ./gateway
 COPY renderer/schema.ts ./renderer/schema.ts
 COPY openapi.json ./openapi.json
